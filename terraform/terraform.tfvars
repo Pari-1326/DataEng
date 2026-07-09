@@ -1,0 +1,6 @@
+region = "us-east-1"
+job_name = "dataeng-glue-job"
+iam_role_name = "dataeng-glue-role"
+script_key = "awsglue.py"
+bucket_prefix = "dataeng-glue-scripts"
+glue_version = "3.0"
