@@ -3,6 +3,27 @@ name: Deploy AWS Glue
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      use_committed_tfvars:
+        description: 'Set to false to override committed tfvars with inputs'
+        required: false
+        default: 'true'
+      region:
+        description: 'AWS region (overrides tfvars)'
+        required: false
+      job_name:
+        description: 'Glue job name (overrides tfvars)'
+        required: false
+      iam_role_name:
+        description: 'IAM role name for Glue (overrides tfvars)'
+        required: false
+      bucket_prefix:
+        description: 'S3 bucket prefix (overrides tfvars)'
+        required: false
+      glue_version:
+        description: 'Glue version (overrides tfvars)'
+        required: false
 
 jobs:
   terraform:
@@ -27,8 +48,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Use committed terraform.tfvars
-        run: echo "Using committed terraform/terraform.tfvars"
+      - name: Prepare terraform.tfvars
+        run: |
+          if [ "${{ github.event.inputs.use_committed_tfvars }}" = "false" ] ; then
+            echo "Writing terraform/terraform.tfvars from workflow inputs"
+            cat > terraform/terraform.tfvars <<EOF
+            region = "${{ github.event.inputs.region }}"
+            job_name = "${{ github.event.inputs.job_name }}"
+            iam_role_name = "${{ github.event.inputs.iam_role_name }}"
+            script_key = "awsglue.py"
+            bucket_prefix = "${{ github.event.inputs.bucket_prefix }}"
+            glue_version = "${{ github.event.inputs.glue_version }}"
+            EOF
+          else
+            echo "Using committed terraform/terraform.tfvars"
+          fi
 
       - name: Terraform Init
         working-directory: terraform
