@@ -46,14 +46,14 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ github.event.inputs.region || secrets.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Prepare terraform.tfvars
         run: |
           if [ "${{ github.event.inputs.use_committed_tfvars }}" = "false" ] ; then
             echo "Writing terraform/terraform.tfvars from workflow inputs"
             cat > terraform/terraform.tfvars <<EOF
-            region = "${{ github.event.inputs.region || secrets.AWS_REGION }}"
+            region = "${{ github.event.inputs.region }}"
             job_name = "${{ github.event.inputs.job_name }}"
             iam_role_name = "${{ github.event.inputs.iam_role_name }}"
             script_key = "awsglue.py"
